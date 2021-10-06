@@ -30,6 +30,7 @@ class Signature
     public function getHeaders(): array
     {
         return [
+            'Request-Id'        => $this->claim->getRequestId(),
             'Client-Id'         => $this->clientId,
             'Request-Timestamp' => $this->claim->getRequestDateString(),
             'Signature'         => 'HMACSHA256='.$this->token,
