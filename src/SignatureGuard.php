@@ -11,11 +11,11 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
-use Pandawa\Signature\Contract\Client;
-use Pandawa\Signature\Contract\ClientRepository;
+use Pandawa\Signature\Contract\ClientInterface;
+use Pandawa\Signature\Contract\ClientRepositoryInterface;
 
 /**
- * @property Client $user
+ * @property ClientInterface $user
  *
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
  */
@@ -26,7 +26,7 @@ class SignatureGuard implements Guard
     protected readonly Signer $signer;
 
     public function __construct(
-        protected readonly ClientRepository $clientRepository,
+        protected readonly ClientRepositoryInterface $clientRepository,
         protected readonly Request $request,
         protected readonly ?int $ttl = null,
         protected readonly string $algo = 'sha256',
@@ -35,7 +35,7 @@ class SignatureGuard implements Guard
         $this->signer = new Signer();
     }
 
-    public function user(): Client
+    public function user(): ClientInterface
     {
         if (!is_null($this->user)) {
             return $this->user;
@@ -53,7 +53,7 @@ class SignatureGuard implements Guard
         throw new BadMethodCallException('Validate is not supported in SignatureGuard.');
     }
 
-    protected function validateSignature(Claim $claim): Client
+    protected function validateSignature(Claim $claim): ClientInterface
     {
         $clientId = $this->request->header('Client-Id');
 

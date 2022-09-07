@@ -7,7 +7,7 @@ namespace Pandawa\Signature\Contract;
 /**
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
  */
-interface ClientRepository
+interface ClientRepositoryInterface
 {
-    public function findByClientId(string $clientId): Client;
+    public function findByClientId(string $clientId): ClientInterface;
 }

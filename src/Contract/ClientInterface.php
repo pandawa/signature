@@ -9,7 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 /**
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
  */
-interface Client extends Authenticatable
+interface ClientInterface extends Authenticatable
 {
     public function getId(): string;
 
