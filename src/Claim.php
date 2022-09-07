@@ -23,13 +23,8 @@ class Claim
         public readonly ?string $body = null,
         public readonly string $algo = 'sha256',
     ) {
-        if (null === $requestId) {
-            $this->requestId = $this->generateRequestId();
-        }
-
-        if (null === $requestDateTime) {
-            $this->requestDateTime = $this->generateDateTime();
-        }
+        $this->requestId = $requestId ?? $this->generateRequestId();
+        $this->requestDateTime = $requestDateTime ?? $this->generateDateTime();
     }
 
     public function refresh(): static

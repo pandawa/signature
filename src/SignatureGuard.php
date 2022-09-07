@@ -80,8 +80,8 @@ class SignatureGuard implements Guard
         $requestBody = $request->getContent();
 
         return new Claim(
-            $request->header('Request-Id'),
             '/' . $request->path(),
+            $request->header('Request-Id'),
             $requestTimestamp,
             !empty($requestBody) ? $requestBody : null,
         );
@@ -111,13 +111,19 @@ class SignatureGuard implements Guard
         );
 
         if (false === $requestTimestamp) {
-            throw new AuthenticationException('Invalid header "Request-Timestamp"');
+            throw new AuthenticationException('Invalid value for header "Request-Timestamp"');
         }
 
-        if (null !== $this->ttl) {
-            $threshold = new DateTime(sprintf('+%d seconds', $this->ttl), new DateTimeZone('UTC'));
+        $this->validateTtl($requestTimestamp);
+    }
 
-            if ($requestTimestamp > $threshold) {
+    protected function validateTtl(DateTime $requestTimestamp): void
+    {
+        if (null !== $this->ttl) {
+            $threshold = (clone $requestTimestamp)->modify(sprintf('+%d minutes', $this->ttl));
+            $now = new DateTime('now', new DateTimeZone('UTC'));
+
+            if ($now > $threshold) {
                 throw new AuthenticationException('The given signature has been expired.');
             }
         }

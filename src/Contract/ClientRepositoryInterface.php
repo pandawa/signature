@@ -9,5 +9,5 @@ namespace Pandawa\Signature\Contract;
  */
 interface ClientRepositoryInterface
 {
-    public function findByClientId(string $clientId): ClientInterface;
+    public function findByClientId(string $clientId): ?ClientInterface;
 }
