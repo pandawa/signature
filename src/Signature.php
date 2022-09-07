@@ -11,29 +11,20 @@ use Illuminate\Http\Request;
  */
 class Signature
 {
-    protected string $token;
-    protected string $clientId;
-    protected Claim $claim;
-
-    public function __construct(string $token, string $clientId, Claim $claim)
-    {
-        $this->token = $token;
-        $this->clientId = $clientId;
-        $this->claim = $claim;
-    }
-
-    public function getToken(): string
-    {
-        return $this->token;
+    public function __construct(
+        public readonly string $token,
+        public readonly string $clientId,
+        public readonly Claim $claim,
+    ) {
     }
 
     public function getHeaders(): array
     {
         return [
-            'Request-Id'        => $this->claim->getRequestId(),
+            'Request-Id'        => $this->claim->requestId,
             'Client-Id'         => $this->clientId,
-            'Request-Timestamp' => $this->claim->getRequestDateString(),
-            'Signature'         => 'HMACSHA256='.$this->token,
+            'Request-Timestamp' => $this->claim->getRequestDateTimeString(),
+            'Signature'         => $this->encodeToken(),
         ];
     }
 
@@ -51,8 +42,13 @@ class Signature
 
     protected function extractSignature(Request $request): string
     {
-        $requestSignature = $request->header('signature');
+        $requestSignature = $request->header('Signature');
 
         return substr($requestSignature, strpos($requestSignature, '=') + 1);
+    }
+
+    protected function encodeToken(): string
+    {
+        return 'HMAC' . strtoupper($this->claim->algo) . '=' . $this->token;
     }
 }

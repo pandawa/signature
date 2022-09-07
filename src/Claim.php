@@ -5,68 +5,93 @@ declare(strict_types=1);
 namespace Pandawa\Signature;
 
 use DateTime;
+use DateTimeZone;
+use Illuminate\Support\Str;
 
 /**
  * @author  Iqbal Maulana <iq.bluejack@gmail.com>
  */
 class Claim
 {
-    protected string $requestId;
-    protected string $targetPath;
-    protected ?string $body;
-    protected DateTime $requestDate;
+    public readonly ?string $requestId;
+    public readonly ?DateTime $requestDateTime;
 
-    public function __construct(string $requestId, string $targetPath, DateTime $requestDate, ?string $body = null)
-    {
-        $this->requestId = $requestId;
-        $this->targetPath = $targetPath;
-        $this->body = $body;
-        $this->requestDate = $requestDate;
+    public function __construct(
+        public readonly string $targetPath,
+        ?string $requestId = null,
+        ?DateTime $requestDateTime = null,
+        public readonly ?string $body = null,
+        public readonly string $algo = 'sha256',
+    ) {
+        if (null === $requestId) {
+            $this->requestId = $this->generateRequestId();
+        }
+
+        if (null === $requestDateTime) {
+            $this->requestDateTime = $this->generateDateTime();
+        }
     }
 
-    public function getRequestId(): string
+    public function refresh(): static
     {
-        return $this->requestId;
+        return $this->refreshRequestId()->refreshRequestDataTime();
     }
 
-    public function getTargetPath(): string
+    public function refreshRequestId(): static
     {
-        return $this->targetPath;
+        return new static(
+            $this->targetPath,
+            $this->generateRequestId(),
+            $this->requestDateTime,
+            $this->body,
+            $this->algo
+        );
     }
 
-    public function getBody(): ?string
+    public function refreshRequestDataTime(): static
     {
-        return $this->body;
+        return new static(
+            $this->targetPath,
+            $this->requestId,
+            $this->generateDateTime(),
+            $this->body,
+            $this->algo
+        );
     }
 
-    public function getRequestDate(): DateTime
+    public function getRequestDateTimeString(): string
     {
-        return $this->requestDate;
-    }
-
-    public function getRequestDateString(): string
-    {
-        $date = $this->requestDate->format('c');
+        $date = $this->requestDateTime->format('c');
 
         return substr($date, 0, strpos($date, '+')) . 'Z';
     }
 
     public function getDigest(): ?string
     {
-        if (null === $this->getBody()) {
+        if (null === $this->body) {
             return null;
         }
 
-        return base64_encode(hash('sha256', $this->getBody(), true));
+        return base64_encode(hash($this->algo, $this->body, true));
     }
 
     public function toArray(): array
     {
         return array_filter([
-            $this->getRequestId(),
-            $this->getRequestDateString(),
-            $this->getTargetPath(),
+            $this->requestId,
+            $this->getRequestDateTimeString(),
+            $this->targetPath,
             $this->getDigest(),
         ]);
+    }
+
+    protected function generateRequestId(): string
+    {
+        return (string) Str::uuid();
+    }
+
+    protected function generateDateTime(): DateTime
+    {
+        return new DateTime('now', new DateTimeZone('UTC'));
     }
 }

@@ -14,15 +14,16 @@ final class Signer
         return new Signature(
             $this->hash(
                 $clientSecret,
-                implode('|', [$clientId, ...$claim->toArray()])
+                implode('|', [$clientId, ...$claim->toArray()]),
+                $claim->algo
             ),
             $clientId,
             $claim,
         );
     }
 
-    private function hash(string $secret, string $text): string
+    private function hash(string $secret, string $text, string $algo): string
     {
-        return hash_hmac('sha256', $text, $secret);
+        return hash_hmac($algo, $text, $secret);
     }
 }
