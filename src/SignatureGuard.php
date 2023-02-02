@@ -107,7 +107,8 @@ class SignatureGuard implements Guard
 
         $requestTimestamp = DateTime::createFromFormat(
             'Y-m-d\TH:i:s\Z',
-            $request->header('Request-Timestamp')
+            $request->header('Request-Timestamp'),
+            new DateTimeZone('UTC')
         );
 
         if (false === $requestTimestamp) {
